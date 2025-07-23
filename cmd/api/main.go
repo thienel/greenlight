@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"sync"
 	"thienel/greenlight/internal/data"
 	"thienel/greenlight/internal/jsonlog"
 	"thienel/greenlight/internal/mailer"
@@ -43,6 +44,7 @@ type application struct {
 	logger *jsonlog.Logger
 	models data.Models
 	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
