@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"strings"
 	"sync"
 	"thienel/greenlight/internal/data"
 	"thienel/greenlight/internal/jsonlog"
@@ -36,6 +37,9 @@ type config struct {
 		username string
 		password string
 		sender   string
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -73,6 +77,12 @@ func main() {
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "957bd121724c73", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <lethien.dev@gmail.com>",
 		"SMTP sender")
+
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)",
+		func(val string) error {
+			cfg.cors.trustedOrigins = strings.Fields(val)
+			return nil
+		})
 
 	flag.Parse()
 
