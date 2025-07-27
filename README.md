@@ -77,7 +77,7 @@ A modern REST API for managing a movie database, built with Go and PostgreSQL. G
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/thienel/greenlight
 cd greenlight
 ```
 
