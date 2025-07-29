@@ -1,47 +1,29 @@
 # Greenlight
 
-A modern REST API for managing a movie database, built with Go and PostgreSQL. Greenlight provides a robust backend service with user authentication, authorization, and comprehensive movie management capabilities.
+A REST API for managing a movie database, built with Go and PostgreSQL.
 
 ## Features
 
-- 🎬 **Movie Management**: Complete CRUD operations for movies
-- 👥 **User Authentication**: Secure user registration and login system
-- 🔐 **Authorization**: Role-based permissions system
-- 📧 **Email Integration**: User activation via email
-- 🚦 **Rate Limiting**: API rate limiting to prevent abuse
-- 🔍 **Filtering & Pagination**: Advanced movie search and filtering
-- 📊 **Metrics**: Application metrics via expvar
-- 🌐 **CORS Support**: Cross-origin resource sharing configuration
-- 📝 **Structured Logging**: JSON-based logging
-- 🛡️ **Input Validation**: Comprehensive request validation
+- Movie management with CRUD operations
+- User authentication and registration
+- Token-based authorization with permissions
+- Email user activation
+- Rate limiting
+- Movie filtering and pagination
+- Application metrics
+- CORS support
+- JSON logging
+- Input validation
+- Comprehensive testing
 
 ## Tech Stack
 
-- **Language**: Go 1.24.4
-- **Database**: PostgreSQL
-- **Router**: httprouter
-- **Email**: SMTP integration
-- **Migrations**: SQL migration files
-- **Encryption**: bcrypt for password hashing
-
-## Project Structure
-
-```
-├── cmd/
-│   ├── api/           # API application entry point
-│   └── examples/      # Example implementations (CORS)
-├── internal/
-│   ├── data/          # Data models and database operations
-│   ├── jsonlog/       # JSON logging utilities
-│   ├── mailer/        # Email sending functionality
-│   └── validator/     # Input validation
-├── migrations/        # Database migration files
-├── mocks/            # Test mocks
-├── remote/           # Remote deployment scripts
-├── go.mod            # Go module dependencies
-├── go.sum            # Dependency checksums
-└── Makefile          # Build and development commands
-```
+- Go 1.24.4
+- PostgreSQL
+- httprouter
+- bcrypt password hashing
+- SMTP email integration
+- SQL migrations
 
 ## API Endpoints
 
@@ -49,11 +31,11 @@ A modern REST API for managing a movie database, built with Go and PostgreSQL. G
 - `GET /v1/healthcheck` - API health status
 
 ### Movies
-- `GET /v1/movies` - List movies (with filtering and pagination)
-- `POST /v1/movies` - Create a new movie
-- `GET /v1/movies/:id` - Get a specific movie
-- `PATCH /v1/movies/:id` - Update a movie
-- `DELETE /v1/movies/:id` - Delete a movie
+- `GET /v1/movies` - List movies with filtering and pagination
+- `POST /v1/movies` - Create a movie (requires movies:write permission)
+- `GET /v1/movies/:id` - Get a movie (requires movies:read permission)
+- `PATCH /v1/movies/:id` - Update a movie (requires movies:write permission)
+- `DELETE /v1/movies/:id` - Delete a movie (requires movies:write permission)
 
 ### Users
 - `POST /v1/users` - Register a new user
@@ -71,7 +53,6 @@ A modern REST API for managing a movie database, built with Go and PostgreSQL. G
 
 - Go 1.24.4 or later
 - PostgreSQL
-- Make (optional, for using Makefile commands)
 
 ### Installation
 
@@ -86,7 +67,7 @@ cd greenlight
 go mod tidy
 ```
 
-3. Set up your environment variables in `.envrc`:
+3. Set up environment variables:
 ```bash
 export GREENLIGHT_DB_DSN="postgres://username:password@localhost/greenlight?sslmode=disable"
 ```
@@ -98,101 +79,87 @@ make db/migrations/up
 
 ### Running the Application
 
-#### Using Make (Recommended)
 ```bash
-# Run the API server
+# Using Make
 make run/api
 
-# Connect to the database
-make db/psql
-
-# View all available commands
-make help
-```
-
-#### Direct Go Command
-```bash
+# Or directly with Go
 go run ./cmd/api -db-dsn="postgres://username:password@localhost/greenlight?sslmode=disable"
 ```
 
-### Configuration Options
+## Configuration
 
 The application accepts the following command-line flags:
 
 - `-port`: Server port (default: 4000)
 - `-env`: Environment (development|staging|production)
 - `-db-dsn`: PostgreSQL DSN
-- `-db-max-open-conns`: Maximum open database connections
-- `-db-max-idle-conns`: Maximum idle database connections
-- `-db-max-idle-time`: Maximum idle connection time
-- `-limiter-rps`: Rate limiter requests per second
-- `-limiter-burst`: Rate limiter burst size
-- `-limiter-enabled`: Enable/disable rate limiting
+- `-db-max-open-conns`: Maximum open database connections (default: 25)
+- `-db-max-idle-conns`: Maximum idle database connections (default: 25)
+- `-db-max-idle-time`: Maximum idle connection time (default: 15m)
+- `-limiter-rps`: Rate limiter requests per second (default: 2)
+- `-limiter-burst`: Rate limiter burst size (default: 4)
+- `-limiter-enabled`: Enable/disable rate limiting (default: true)
 - `-smtp-host`: SMTP server host
-- `-smtp-port`: SMTP server port
+- `-smtp-port`: SMTP server port (default: 2525)
 - `-smtp-username`: SMTP username
 - `-smtp-password`: SMTP password
 - `-smtp-sender`: SMTP sender address
-- `-cors-trusted-origins`: Trusted CORS origins
+- `-cors-trusted-origins`: Trusted CORS origins (space separated)
 
-## Database Schema
+## Database
 
-The application uses PostgreSQL with the following main tables:
+The application uses PostgreSQL with these tables:
 
 - **movies**: Store movie information (title, year, runtime, genres)
 - **users**: User accounts and authentication
 - **tokens**: Authentication tokens
 - **permissions**: User permissions system
 
-Migration files are located in the `migrations/` directory and handle:
-- Table creation
-- Constraints and indexes
-- Permissions setup
+Migration files in the `migrations/` directory handle schema creation and updates.
 
-## Authentication & Authorization
+## Authentication
 
-Greenlight implements a token-based authentication system:
+The application uses token-based authentication:
 
 1. Users register and receive an activation email
 2. After activation, users can authenticate to receive tokens
 3. Tokens are required for protected endpoints
-4. Permissions control access to specific operations
-
-### Permissions
-
-- `movies:read` - Read movie data
-- `movies:write` - Create, update, delete movies
+4. Permissions control access to specific operations:
+   - `movies:read` - Read movie data
+   - `movies:write` - Create, update, delete movies
 
 ## Development
 
 ### Available Make Commands
 
 ```bash
-make help                 # Show available commands
+make help                # Show available commands
 make run/api             # Run the API server
 make db/psql             # Connect to database
 make db/migrations/new   # Create new migration
 make db/migrations/up    # Apply migrations
-make db/migrations/down  # Rollback migrations
 make audit               # Run quality control checks
-make build/api           # Build API binary
 ```
 
 ### Testing
 
 Run tests with:
+
 ```bash
+# Run all tests
 go test ./...
-```
 
-### Code Quality
+# Run with race detection
+go test -race ./...
 
-The project includes quality control checks:
-```bash
+# Run quality audit (includes tests, formatting, static analysis)
 make audit
 ```
 
-## API Usage Examples
+The test suite includes unit tests for all packages. Integration and end-to-end tests require a database connection.
+
+## API Examples
 
 ### Create a Movie
 ```bash
@@ -223,21 +190,3 @@ curl -X POST http://localhost:4000/v1/users \
     "password": "securepassword123"
   }'
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Built following Go best practices
-- Inspired by modern REST API design principles
-- Uses industry-standard authentication patterns
